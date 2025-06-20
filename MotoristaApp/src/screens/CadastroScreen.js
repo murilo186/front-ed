@@ -9,6 +9,8 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import ApiService from "../services/apiService";
 
@@ -97,101 +99,131 @@ const CadastroScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoIcon}>🚛</Text>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoIcon}>🚛</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Título */}
-        <Text style={styles.title}>NALM GO!</Text>
-        <Text style={styles.subtitle}>Transporte Simplificado</Text>
+          {/* Título */}
+          <Text style={styles.title}>NALM GO!</Text>
+          <Text style={styles.subtitle}>Transporte Simplificado</Text>
 
-        {/* Tab Cadastro */}
-        <View style={styles.tabContainer}>
-          <View style={styles.tab}>
-            <Text style={styles.tabText}>Criar Conta</Text>
+          {/* Tab Cadastro */}
+          <View style={styles.tabContainer}>
+            <View style={styles.tab}>
+              <Text style={styles.tabText}>Criar Conta</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Formulário */}
-        <View style={styles.form}>
-          <Text style={styles.label}>Nome Completo</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu nome completo"
-            value={nome}
-            onChangeText={setNome}
-            autoCapitalize="words"
-            editable={!loading}
-          />
+          {/* Formulário */}
+          <View style={styles.form}>
+            <Text style={styles.label}>Nome Completo</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu nome completo"
+              value={nome}
+              onChangeText={setNome}
+              autoCapitalize="words"
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => this.usuarioInput.focus()}
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>Usuário</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu nome de usuário"
-            value={usuario}
-            onChangeText={setUsuario}
-            autoCapitalize="none"
-            editable={!loading}
-          />
+            <Text style={styles.label}>Usuário</Text>
+            <TextInput
+              ref={(input) => { this.usuarioInput = input; }}
+              style={styles.input}
+              placeholder="Digite seu nome de usuário"
+              value={usuario}
+              onChangeText={setUsuario}
+              autoCapitalize="none"
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => this.cpfInput.focus()}
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>CPF</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChangeText={formatCPF}
-            keyboardType="numeric"
-            maxLength={14}
-            editable={!loading}
-          />
+            <Text style={styles.label}>CPF</Text>
+            <TextInput
+              ref={(input) => { this.cpfInput = input; }}
+              style={styles.input}
+              placeholder="000.000.000-00"
+              value={cpf}
+              onChangeText={formatCPF}
+              keyboardType="numeric"
+              maxLength={14}
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => this.emailInput.focus()}
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite seu email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={!loading}
-          />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              ref={(input) => { this.emailInput = input; }}
+              style={styles.input}
+              placeholder="Digite seu email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => this.senhaInput.focus()}
+              blurOnSubmit={false}
+            />
 
-          <Text style={styles.label}>Senha</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite sua senha (mín. 6 caracteres)"
-            value={senha}
-            onChangeText={setSenha}
-            secureTextEntry
-            editable={!loading}
-          />
+            <Text style={styles.label}>Senha</Text>
+            <TextInput
+              ref={(input) => { this.senhaInput = input; }}
+              style={styles.input}
+              placeholder="Digite sua senha (mín. 6 caracteres)"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              editable={!loading}
+              returnKeyType="done"
+              onSubmitEditing={handleSignUp}
+            />
 
-          <TouchableOpacity
-            style={[styles.signUpButton, loading && styles.buttonDisabled]}
-            onPress={handleSignUp}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.signUpButtonText}>Criar Conta</Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.signUpButton, loading && styles.buttonDisabled]}
+              onPress={handleSignUp}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.signUpButtonText}>Criar Conta</Text>
+              )}
+            </TouchableOpacity>
 
-          {/* Link para voltar ao login */}
-          <TouchableOpacity
-            onPress={handleBackToLogin}
-            style={styles.loginContainer}
-            disabled={loading}
-          >
-            <Text style={styles.loginText}>Já tem uma conta? Entre aqui</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            {/* Link para voltar ao login */}
+            <TouchableOpacity
+              onPress={handleBackToLogin}
+              style={styles.loginContainer}
+              disabled={loading}
+            >
+              <Text style={styles.loginText}>Já tem uma conta? Entre aqui</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -201,10 +233,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5DC", // Cor bege/creme
   },
-  content: {
+  keyboardAvoidingView: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     paddingHorizontal: 30,
     paddingTop: 60,
+    paddingBottom: 30,
   },
   logoContainer: {
     alignItems: "center",

@@ -8,6 +8,9 @@ import {
   SafeAreaView,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from "react-native";
 
 import ApiService from "../services/apiService";
@@ -71,93 +74,113 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoIcon}>🚛</Text>
-          </View>
-        </View>
-
-        {/* Título */}
-        <Text style={styles.title}>NALM GO!</Text>
-        <Text style={styles.subtitle}>Transporte Simplificado</Text>
-
-        {/* Tab Motorista */}
-        <View style={styles.tabContainer}>
-          <View style={styles.tab}>
-            <Text style={styles.tabText}>Página do Motorista</Text>
-          </View>
-          <View style={styles.blueBox}>
-            <Text style={styles.blueBoxText}>35$ • 45 Hug</Text>
-          </View>
-        </View>
-
-        {/* Formulário */}
-        <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Entre com seu email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={!loading}
-          />
-
-          <Text style={styles.label}>Senha</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Entre com sua senha"
-            value={senha}
-            onChangeText={setSenha}
-            secureTextEntry
-            editable={!loading}
-          />
-
-          <TouchableOpacity
-            style={[styles.loginButton, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.loginButtonText}>Entrar</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
-            <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
-          </TouchableOpacity>
-
-          {/* Nova seção de cadastro */}
-          <TouchableOpacity
-            onPress={handleSignUp}
-            style={styles.signUpContainer}
-            disabled={loading}
-          >
-            <Text style={styles.signUpText}>
-              Não tem uma conta ainda? cadastre-se
-            </Text>
-          </TouchableOpacity>
-
-          <Text style={styles.orText}>or</Text>
-
-          {/* Touch ID */}
-          <TouchableOpacity
-            style={styles.touchIdContainer}
-            onPress={handleTouchID}
-            disabled={loading}
-          >
-            <View style={styles.touchIdIcon}>
-              <Text style={styles.touchIdEmoji}>🔒</Text>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoIcon}>🚛</Text>
             </View>
-            <Text style={styles.touchIdText}>Use Touch ID</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          </View>
+
+          {/* Título */}
+          <Text style={styles.title}>NALM GO!</Text>
+          <Text style={styles.subtitle}>Transporte Simplificado</Text>
+
+          {/* Tab Motorista */}
+          <View style={styles.tabContainer}>
+            <View style={styles.tab}>
+              <Text style={styles.tabText}>Página do Motorista</Text>
+            </View>
+            <View style={styles.blueBox}>
+              <Text style={styles.blueBoxText}>35$ • 45 Hug</Text>
+            </View>
+          </View>
+
+          {/* Formulário */}
+          <View style={styles.form}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Entre com seu email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!loading}
+              returnKeyType="next"
+              onSubmitEditing={() => this.senhaInput.focus()}
+              blurOnSubmit={false}
+            />
+
+            <Text style={styles.label}>Senha</Text>
+            <TextInput
+              ref={(input) => {
+                this.senhaInput = input;
+              }}
+              style={styles.input}
+              placeholder="Entre com sua senha"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+              editable={!loading}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+
+            <TouchableOpacity
+              style={[styles.loginButton, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.loginButtonText}>Entrar</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
+              <Text style={styles.forgotPassword}>Esqueceu sua senha?</Text>
+            </TouchableOpacity>
+
+            {/* Nova seção de cadastro */}
+            <TouchableOpacity
+              onPress={handleSignUp}
+              style={styles.signUpContainer}
+              disabled={loading}
+            >
+              <Text style={styles.signUpText}>
+                Não tem uma conta ainda? cadastre-se
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.orText}>or</Text>
+
+            {/* Touch ID */}
+            <TouchableOpacity
+              style={styles.touchIdContainer}
+              onPress={handleTouchID}
+              disabled={loading}
+            >
+              <View style={styles.touchIdIcon}>
+                <Text style={styles.touchIdEmoji}>🔒</Text>
+              </View>
+              <Text style={styles.touchIdText}>Use Touch ID</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -167,10 +190,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F5F5DC", // Cor bege/creme
   },
-  content: {
+  keyboardAvoidingView: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     paddingHorizontal: 30,
     paddingTop: 60,
+    paddingBottom: 30,
   },
   logoContainer: {
     alignItems: "center",
