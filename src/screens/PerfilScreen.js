@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "../navigation/AppNavigator";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import * as Clipboard from "expo-clipboard";
 import { uploadImage } from "../services/UploadImage";
 import apiService from "../services/apiService";
 
@@ -120,11 +121,29 @@ export default function PerfilScreen() {
     }
   };
 
-  const copyVinculationCode = () => {
+  const copyVinculationCode = async () => {
     const code = userData?.codigo || "N/A";
-    Alert.alert("Código de Vinculação", `Seu código: ${code}\n\nCompartilhe este código com a empresa para se vincular!`,
-      [{ text: "Copiar", onPress: () => console.log("Código copiado") }, { text: "OK" }]
-    );
+
+    if (code === "N/A") {
+      Alert.alert("Erro", "Código de vinculação não disponível");
+      return;
+    }
+
+    try {
+      await Clipboard.setStringAsync(code);
+      Alert.alert(
+        "Código Copiado!",
+        `Código ${code} foi copiado para a área de transferência.\n\nCompartilhe este código com a empresa para se vincular!`,
+        [{ text: "OK" }]
+      );
+    } catch (error) {
+      console.error("Erro ao copiar código:", error);
+      Alert.alert(
+        "Código de Vinculação",
+        `Seu código: ${code}\n\nNão foi possível copiar automaticamente. Anote este código para compartilhar com a empresa.`,
+        [{ text: "OK" }]
+      );
+    }
   };
 
   const aceitarConvite = async (convite) => {

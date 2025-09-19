@@ -39,16 +39,13 @@ export default function FreteScreen() {
       console.log("🚛 Carregando fretes para motorista:", userData.id);
 
       // Carregar fretes oferecidos (pendentes de resposta)
-      const oferecidos = await fetch(`${apiService.getBaseURL()}/fretes/motorista/${userData.id}/oferecidos`);
-      const oferecidosData = await oferecidos.json();
+      const oferecidosData = await apiService.buscarFretesOferecidos(userData.id);
 
       // Carregar fretes ativos (aceitos/em andamento)
-      const ativos = await fetch(`${apiService.getBaseURL()}/fretes/motorista/${userData.id}/ativos`);
-      const ativosData = await ativos.json();
+      const ativosData = await apiService.buscarFretesAtivos(userData.id);
 
       // Carregar histórico de fretes finalizados
-      const historico = await fetch(`${apiService.getBaseURL()}/fretes/motorista/${userData.id}/historico`);
-      const historicoData = await historico.json();
+      const historicoData = await apiService.buscarHistoricoFretes(userData.id);
 
       if (oferecidosData.success) {
         setFretesOferecidos(oferecidosData.fretes || []);
@@ -87,17 +84,7 @@ export default function FreteScreen() {
             try {
               console.log("✅ Aceitando frete:", frete.id);
 
-              const response = await fetch(`${apiService.getBaseURL()}/fretes/${frete.id}/aceitar`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  motoristaId: userData.id
-                })
-              });
-
-              const data = await response.json();
+              const data = await apiService.aceitarFrete(frete.id, userData.id);
 
               if (data.success) {
                 Alert.alert("Sucesso!", "Frete aceito com sucesso!");
@@ -128,18 +115,7 @@ export default function FreteScreen() {
             try {
               console.log("❌ Recusando frete:", frete.id);
 
-              const response = await fetch(`${apiService.getBaseURL()}/fretes/${frete.id}/recusar`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  motoristaId: userData.id,
-                  observacoes: "Recusado pelo motorista via app"
-                })
-              });
-
-              const data = await response.json();
+              const data = await apiService.recusarFrete(frete.id, userData.id, "Recusado pelo motorista via app");
 
               if (data.success) {
                 Alert.alert("Frete Recusado", "O frete foi recusado.");

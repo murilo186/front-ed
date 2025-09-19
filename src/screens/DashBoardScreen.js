@@ -123,18 +123,10 @@ export default function DashBoardScreen() {
               );
 
               // Chamada real para API
-              const response = await fetch(
-                `${apiService.getBaseURL()}/api/auth/motorista/${
-                  userData.id
-                }/status`,
-                {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ status_disponibilidade: novoStatus }),
-                }
+              const data = await apiService.atualizarStatusMotorista(
+                userData.id,
+                novoStatus
               );
-
-              const data = await response.json();
 
               if (data.success) {
                 setMotoristaStatus(novoStatus);

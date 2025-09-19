@@ -1,6 +1,6 @@
 // src/services/apiService.js - MOBILE INTEGRADO COM FRETES
 
-const API_BASE_URL = "http://192.168.1.17:3000";
+const API_BASE_URL = "http://10.111.66.111:3000";
 
 class ApiService {
   async makeRequest(endpoint, options = {}) {
@@ -80,19 +80,19 @@ class ApiService {
   // ===================================
 
   async buscarConvitesMotorista(motoristaId) {
-    return this.makeRequest(`/api/auth/motorista/${motoristaId}/convites`);
+    return this.makeRequest(`/api/convites/motorista/${motoristaId}`);
   }
 
   async aceitarConvite(conviteId, motoristaId) {
-    return this.makeRequest(`/api/auth/convites/${conviteId}/aceitar`, {
+    return this.makeRequest(`/api/convites/${conviteId}/aceitar`, {
       method: "PUT",
       body: JSON.stringify({ motoristaId }),
     });
   }
 
   async rejeitarConvite(conviteId, motoristaId) {
-    return this.makeRequest(`/api/auth/convites/${conviteId}/rejeitar`, {
-      method: "PUT", 
+    return this.makeRequest(`/api/convites/${conviteId}/rejeitar`, {
+      method: "PUT",
       body: JSON.stringify({ motoristaId }),
     });
   }
@@ -103,43 +103,60 @@ class ApiService {
 
   // Buscar fretes oferecidos para o motorista (pendentes de resposta)
   async buscarFretesOferecidos(motoristaId) {
-    return this.makeRequest(`/fretes/motorista/${motoristaId}/oferecidos`);
+    return this.makeRequest(`/api/fretes/motorista/${motoristaId}/oferecidos`);
   }
 
   // Buscar fretes ativos do motorista (aceitos/em andamento)
   async buscarFretesAtivos(motoristaId) {
-    return this.makeRequest(`/fretes/motorista/${motoristaId}/ativos`);
+    return this.makeRequest(`/api/fretes/motorista/${motoristaId}/ativos`);
   }
 
   // Buscar histórico completo de fretes do motorista
   async buscarHistoricoFretes(motoristaId) {
-    // Esta rota precisa ser implementada no backend se necessário
-    // Por enquanto, podemos usar a mesma lógica dos ativos filtrados
-    return this.makeRequest(`/fretes/motorista/${motoristaId}/historico`);
+    return this.makeRequest(`/api/fretes/motorista/${motoristaId}/historico`);
   }
 
   // Aceitar frete oferecido
   async aceitarFrete(freteId, motoristaId) {
-    return this.makeRequest(`/fretes/${freteId}/aceitar`, {
+    console.log("🚛 DEBUG aceitarFrete - ANTES da conversão:", {
+      freteId: freteId,
+      motoristaId: motoristaId,
+      freteIdType: typeof freteId,
+      motoristaIdType: typeof motoristaId,
+    });
+
+    const freteIdInt = parseInt(freteId);
+    const motoristaIdInt = parseInt(motoristaId);
+
+    console.log("🚛 DEBUG aceitarFrete - DEPOIS da conversão:", {
+      freteIdInt,
+      motoristaIdInt,
+      freteIdIntType: typeof freteIdInt,
+      motoristaIdIntType: typeof motoristaIdInt,
+      isNaNFreteId: isNaN(freteIdInt),
+      isNaNMotoristaId: isNaN(motoristaIdInt),
+    });
+
+    return this.makeRequest(`/api/fretes/${freteIdInt}/aceitar`, {
       method: "PUT",
-      body: JSON.stringify({ motoristaId }),
+      body: JSON.stringify({ motoristaId: motoristaIdInt }),
     });
   }
 
   // Recusar frete oferecido
   async recusarFrete(freteId, motoristaId, observacoes = null) {
-    return this.makeRequest(`/fretes/${freteId}/recusar`, {
+    return this.makeRequest(`/api/fretes/${parseInt(freteId)}/recusar`, {
       method: "PUT",
-      body: JSON.stringify({ 
-        motoristaId, 
-        observacoes: observacoes || "Recusado pelo motorista via app"
+      body: JSON.stringify({
+        motoristaId: parseInt(motoristaId),
+        observacoes: observacoes || "Recusado pelo motorista via app",
       }),
     });
   }
 
   // Buscar detalhes de um frete específico
   async buscarDetalheFrete(freteId) {
-    return this.makeRequest(`/fretes/${freteId}`);
+    return this.makeRequest(`/api/fretes/${freteId}`);
   }
 
   // ===================================
@@ -148,18 +165,17 @@ class ApiService {
 
   // Atualizar status de disponibilidade do motorista
   async atualizarStatusMotorista(motoristaId, novoStatus) {
-    // Esta rota precisa ser implementada no backend
-    return this.makeRequest(`/api/auth/motorista/${motoristaId}/status`, {
+    return this.makeRequest(`/api/fretes/motorista/${motoristaId}/status`, {
       method: "PUT",
-      body: JSON.stringify({ 
-        status_disponibilidade: novoStatus // livre, indisponivel, em-frete
+      body: JSON.stringify({
+        status_disponibilidade: novoStatus, // livre, indisponivel, em-frete
       }),
     });
   }
 
   // Buscar dados atualizados do motorista
   async buscarDadosMotorista(motoristaId) {
-    return this.makeRequest(`/api/auth/motorista/${motoristaId}`);
+    return this.makeRequest(`/api/motoristas/${motoristaId}`);
   }
 
   // ===================================
@@ -180,7 +196,7 @@ class ApiService {
 
   async testConnection() {
     try {
-      const response = await this.makeRequest("/health");
+      const response = await this.makeRequest("/api/health");
       console.log("✅ Conexão com servidor OK!");
       return response;
     } catch (error) {
@@ -207,7 +223,7 @@ class ApiService {
     try {
       const [oferecidos, ativos] = await Promise.all([
         this.buscarFretesOferecidos(motoristaId),
-        this.buscarFretesAtivos(motoristaId)
+        this.buscarFretesAtivos(motoristaId),
       ]);
 
       return {
@@ -215,8 +231,8 @@ class ApiService {
         fretes: {
           oferecidos: oferecidos.success ? oferecidos.fretes : [],
           ativos: ativos.success ? ativos.fretes : [],
-          historico: [] // Implementar quando necessário
-        }
+          historico: [], // Implementar quando necessário
+        },
       };
     } catch (error) {
       console.error("❌ Erro ao carregar todos os fretes:", error);
@@ -226,8 +242,8 @@ class ApiService {
         fretes: {
           oferecidos: [],
           ativos: [],
-          historico: []
-        }
+          historico: [],
+        },
       };
     }
   }
@@ -259,8 +275,8 @@ class ApiService {
   // ===================================
 
   formatarValor(valor) {
-    if (typeof valor === 'number') {
-      return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+    if (typeof valor === "number") {
+      return `R$ ${valor.toFixed(2).replace(".", ",")}`;
     }
     return valor;
   }
@@ -268,7 +284,7 @@ class ApiService {
   formatarData(dataString) {
     try {
       const data = new Date(dataString);
-      return data.toLocaleDateString('pt-BR');
+      return data.toLocaleDateString("pt-BR");
     } catch (error) {
       return dataString;
     }
@@ -277,7 +293,7 @@ class ApiService {
   formatarDataHora(dataString) {
     try {
       const data = new Date(dataString);
-      return data.toLocaleString('pt-BR');
+      return data.toLocaleString("pt-BR");
     } catch (error) {
       return dataString;
     }
@@ -288,11 +304,11 @@ class ApiService {
   // ===================================
 
   log(message, data = null) {
-    console.log(`🔧 ApiService: ${message}`, data || '');
+    console.log(`🔧 ApiService: ${message}`, data || "");
   }
 
   error(message, error = null) {
-    console.error(`❌ ApiService Error: ${message}`, error || '');
+    console.error(`❌ ApiService Error: ${message}`, error || "");
   }
 }
 
